@@ -2,7 +2,6 @@ from funcao import *
 from tkinter import *
 import threading
 from time import sleep
-from tkinter import TclError
 
 
 def botao_preco_venda():
