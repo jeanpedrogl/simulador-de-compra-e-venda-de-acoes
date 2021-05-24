@@ -2,8 +2,8 @@ from funcao import *
 from tkinter import filedialog
 from tkinter import *
 import threading
-from time import sleep
 import os.path
+from time import sleep
 
 
 def botao_preco_venda():
@@ -154,7 +154,7 @@ def enviar_venda():
         mensagem_erro('VOCÊ DEVE ESCOLHER UMA AÇÃO PARA VENDER')
         return
     if not k:
-        mensagem_erro('VOCE NÃO PODE VENDER O QUE NÃO TEM')
+        mensagem_erro('MERCADO FECHADO OU VOCÊ NÂO POSSUI PAPÉIS SUFICIENTES')
     else:
         dinheiro_carteira()
         mensagem_sucesso(f'{x} VENDIDO POR {k[1]}, TOTALIZANDO +{k[1] * k[2]}')
@@ -175,7 +175,8 @@ def enviar_compra():
     if not x:
         if x is None:
             return
-        mensagem_erro(f'DINHEIRO INSUFICIENTE PARA REALIZAR COMPRA DE {codigo_entry_compra.get().upper()}')
+        mensagem_erro(f'MERCADO FECHADO OU DINHEIRO INSUFICIENTE PARA REALIZAR COMPRA DE '
+                      f'{codigo_entry_compra.get().upper()}')
     else:
         dinheiro_carteira()
         mensagem_sucesso(f'{x[0]} COMPRADO POR {x[1]}, TOTALIZANDO {(float(x[1]) * float(x[2])):.2f}')
