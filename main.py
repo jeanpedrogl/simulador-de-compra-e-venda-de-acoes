@@ -1,7 +1,9 @@
 from funcao import *
+from tkinter import filedialog
 from tkinter import *
 import threading
 from time import sleep
+import os.path
 
 
 def botao_preco_venda():
@@ -27,6 +29,45 @@ def botao_preco_compra():
     except AttributeError:
         mensagem_erro('PAPEL NÃO ENCONTRADO OU NÃO ESPECIFICADO')
         ver_preco_compra.config(text=f'Qual o preço?')
+
+
+def abrir_arquivo():
+    global carteira_inicial
+    carteira_inicial = Carteira(filedialog.askdirectory(initialdir='dados'))
+    atualizar_listbox()
+    dinheiro_carteira()
+    atualizar_diretorio_de_pasta()
+
+
+def criar_arquivo():
+    global carteira_inicial
+    diretorio = filedialog.askdirectory(title='Criar banco de dados em qual pasta?', initialdir='dados')
+
+    if os.path.isfile(diretorio + '\\dados.db') or os.path.isfile(diretorio + '\\dados.db'):
+        resposta = messagebox.askyesno(title='Já tem arquivos aqui', message='Quer substituir os arquivos?')
+        if not resposta:
+            carteira_inicial = Carteira(diretorio)
+            atualizar_diretorio_de_pasta()
+            return
+
+    with open(diretorio + '\\dinheiro.txt', 'w') as escrita:
+        escrita.write('1000')
+    with open(diretorio + '\\dados.db', 'w'):
+        banco = sqlite3.connect(diretorio + '\\dados.db')
+        cursor = banco.cursor()
+        cursor.execute('''CREATE TABLE papeis (
+                                    nome text,
+                                    preco real,
+                                    quantidade integer,
+                                    total real
+                                    )''')
+        banco.commit()
+        banco.close()
+
+    carteira_inicial = Carteira(diretorio)
+    atualizar_listbox()
+    dinheiro_carteira()
+    atualizar_diretorio_de_pasta()
 
 
 def mudar_tempo():
@@ -56,6 +97,17 @@ def mudar_tempo():
     janela_pergunta.mainloop()
 
 
+def atualizar_diretorio_de_pasta():
+    diretorio_mostrar.config(text=carteira_inicial.pasta_origem)
+
+
+def atualizar_listbox():
+    lista_oque_tenho.delete(0, END)
+    papeis_atualizados = carteira_inicial.enviar_carteira_alfabetica()
+    for chave, acao in enumerate(papeis_atualizados):
+        lista_oque_tenho.insert(chave, f'{acao[0]} - {acao[2]}')
+
+
 def atualizador_carteira(tempo=3, inicial=1000):
     segunda_janela = Toplevel()
     segunda_janela.resizable(0, 0)
@@ -66,8 +118,8 @@ def atualizador_carteira(tempo=3, inicial=1000):
     rendimento.pack()
     try:
         while segunda_janela:
-            dados = enviar_carteira_alfabetica()
-            bolso = dinheiro_restante()
+            dados = carteira_inicial.enviar_carteira_alfabetica()
+            bolso = carteira_inicial.dinheiro_restante()
             soma = 0
             for dado in dados:
                 valor_atualizado = pega_dados(dado[0])[0]
@@ -76,22 +128,15 @@ def atualizador_carteira(tempo=3, inicial=1000):
             total.config(text=f'R${final:.2f}')
             rendimento.config(text=f'R${final - inicial:.2f}, {((final - inicial) / inicial) * 100:.2f}%')
             sleep(tempo)
-    except RuntimeError or TclError:
+    except RuntimeError:
         segunda_janela.destroy()
 
     segunda_janela.mainloop()
 
 
 def dinheiro_carteira():
-    dinheiro_total.config(text=f'R${dinheiro_restante():.2f}')
+    dinheiro_total.config(text=f'R${carteira_inicial.dinheiro_restante():.2f}')
     atualizar_listbox()
-
-
-def atualizar_listbox():
-    lista_oque_tenho.delete(0, END)
-    papeis_atualizados = enviar_carteira_alfabetica()
-    for chave, acao in enumerate(papeis_atualizados):
-        lista_oque_tenho.insert(chave, f'{acao[0]} - {acao[2]}')
 
 
 def enviar_venda():
@@ -100,7 +145,7 @@ def enviar_venda():
         n = int(quantidade_entry_venda.get())
         if n <= 0:
             raise ValueError
-        k = venda(x, n)
+        k = carteira_inicial.venda(x, n)
 
     except ValueError:
         mensagem_erro('VOCÊ DEVE COLOCAR UM NÚMERO NATURAL POSITIVO EM "VENDER QUANTOS"')
@@ -122,7 +167,7 @@ def enviar_compra():
         n = int(quantidade_entry_compra.get())
         if n <= 0:
             raise ValueError
-        x = compra(codigo_entry_compra.get().upper(), n)
+        x = carteira_inicial.compra(codigo_entry_compra.get().upper(), n)
 
     except ValueError:
         mensagem_erro('VOCÊ DEVE COLOCAR UM NÚMERO NATURAL POSITIVO EM "QUANTIDADE"')
@@ -139,6 +184,7 @@ def enviar_compra():
         quantidade_entry_compra.delete(0, END)
 
 
+carteira_inicial = Carteira('dados\\dados')
 tempo_de_atualizacao = 900
 janela = Tk()
 janela.geometry('800x640')
@@ -147,16 +193,20 @@ janela.iconphoto(True, foto_tela)
 janela.title('SIMULADOR DE AÇÕES')
 janela.resizable(0, 0)
 
-
 parte_superior = Frame(janela)
 parte_superior.pack()
 
+
+# mostrar diretório
+diretorio_mostrar = Label(text='Nenhuma pasta aberta', font=('Arial', 7, 'italic'))
+diretorio_mostrar.place(x=0, y=0)
+atualizar_diretorio_de_pasta()
 
 # dinheiro total e carteira
 dinheiro_total = Button(parte_superior, text='  SEM DADOS  ', bg='YELLOW', font=('arial', 15),
                         command=dinheiro_carteira)
 dinheiro_total.grid(row=1)
-dinheiro_total.config(text=f'R${dinheiro_restante():.2f}')
+dinheiro_total.config(text=f'R${carteira_inicial.dinheiro_restante():.2f}')
 
 
 botao_carteira = Button(parte_superior, text='CARTEIRA', bg='BLUE',
@@ -177,12 +227,12 @@ janela.config(menu=menuBar)
 menu_arquivo = Menu(menuBar, tearoff=0)
 menuBar.add_cascade(label='Arquivo', menu=menu_arquivo)
 menu_arquivo.add_command(label='Abrir', command=abrir_arquivo)
-menu_arquivo.add_command(label='Salvar', command=salvar_arquivo)
+menu_arquivo.add_command(label='Criar db', command=criar_arquivo)
 menu_arquivo.add_separator()
 menu_arquivo.add_command(label='Sair', command=lambda: exit())
 menu_config = Menu(menuBar, tearoff=0)
 menuBar.add_cascade(label='Configurações', menu=menu_config)
-menu_config.add_command(label='Tempo ATT', command=mudar_tempo)
+menu_config.add_command(label='Tempo att', command=mudar_tempo)
 
 # compra
 titulo_compra = Label(janela, text='COMPRA', font=('ARIAL', 20), fg='GREEN')
@@ -217,7 +267,7 @@ dados_venda.place(x=420, y=200)
 
 lista_oque_tenho = Listbox(dados_venda, font=('arial', 15), bg='#f8c471', width=12, height=7)
 lista_oque_tenho.grid(row=0, column=0, rowspan=15)
-papeis_que_tenho = enviar_carteira_alfabetica()
+papeis_que_tenho = carteira_inicial.enviar_carteira_alfabetica()
 
 quantidade_label_venda = Label(dados_venda, text='VENDER QUANTOS', font=('ARIAL', 13), fg='blue')
 quantidade_label_venda.grid(row=1, column=2)
