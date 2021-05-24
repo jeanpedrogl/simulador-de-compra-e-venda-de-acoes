@@ -137,11 +137,11 @@ def mensagem_sucesso(mensagem):
 def mercado_ta_aberto():
     dia = strftime('%A', localtime())
     hora = int(strftime('%H', localtime()))
-    if dia in ['Sundar', 'Monday'] or hora <= 10 or hora >= 17:
+    if dia in ['Sunday', 'Saturday'] or hora <= 10 or hora >= 17:
         return False
     else:
         return True
 
 
 if __name__ == '__main__':
-    pass
+    print(mercado_ta_aberto())
