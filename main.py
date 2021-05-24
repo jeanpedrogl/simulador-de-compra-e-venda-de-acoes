@@ -140,6 +140,9 @@ def dinheiro_carteira():
 
 
 def enviar_venda():
+    if not mercado_ta_aberto():
+        mensagem_erro('MERCADO FECHADO')
+        return
     try:
         x = lista_oque_tenho.get(lista_oque_tenho.curselection()).split(' -')[0].upper()
         n = int(quantidade_entry_venda.get())
@@ -154,7 +157,7 @@ def enviar_venda():
         mensagem_erro('VOCÊ DEVE ESCOLHER UMA AÇÃO PARA VENDER')
         return
     if not k:
-        mensagem_erro('MERCADO FECHADO OU VOCÊ NÂO POSSUI PAPÉIS SUFICIENTES')
+        mensagem_erro('VOCÊ NÃO PODE VENDER O QUE NÃO TEM')
     else:
         dinheiro_carteira()
         mensagem_sucesso(f'{x} VENDIDO POR {k[1]}, TOTALIZANDO +{k[1] * k[2]}')
@@ -163,6 +166,9 @@ def enviar_venda():
 
 
 def enviar_compra():
+    if not mercado_ta_aberto():
+        mensagem_erro('MERCADO FECHADO')
+        return
     try:
         n = int(quantidade_entry_compra.get())
         if n <= 0:
