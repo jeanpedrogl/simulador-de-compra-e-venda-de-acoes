@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 from tkinter import messagebox
+from time import localtime, strftime
 
 
 class Carteira:
@@ -33,6 +34,8 @@ class Carteira:
         self.dinheiro_restante()
 
     def compra(self, codigo_da_acao, quantidade):
+        if not mercado_ta_aberto():
+            return False
         banco = sqlite3.connect(self.pasta_origem + '\\dados.db')
         cursor = banco.cursor()
         preco_novo, codigo_da_acao = pega_dados(codigo_da_acao)
@@ -66,6 +69,8 @@ class Carteira:
         return [codigo_da_acao, preco_novo, quantidade]
 
     def venda(self, codigo_da_acao, venderquantos):
+        if not mercado_ta_aberto():
+            return False
         banco = sqlite3.connect(self.pasta_origem + '\\dados.db')
         cursor = banco.cursor()
         preco_novo, codigo_da_acao = pega_dados(codigo_da_acao)
@@ -127,6 +132,15 @@ def mensagem_erro(mensagem):
 
 def mensagem_sucesso(mensagem):
     messagebox.showinfo(title='OPERAÇÃO REALIZADA COM SUCESSO', message=mensagem)
+
+
+def mercado_ta_aberto():
+    dia = strftime('%A', localtime())
+    hora = int(strftime('%H', localtime()))
+    if dia in ['Sundar', 'Monday'] or hora <= 10 or hora >= 17:
+        return False
+    else:
+        return True
 
 
 if __name__ == '__main__':
