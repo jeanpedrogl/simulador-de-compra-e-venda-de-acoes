@@ -12,30 +12,10 @@ class Carteira:
 
     # carteira 2, so o dinheiro restante
     def dinheiro_restante(self):
-        try:
-            with open(self.pasta_origem + '\\dinheiro.txt', 'r') as leitura:
-                return float(leitura.readline())
-        except FileNotFoundError:
-            with open(self.pasta_origem + '\\dados.db', 'w'):
-                pass
-            with open(self.pasta_origem + '\\dinheiro.txt', 'w') as escrita:
-                escrita.write('1000')
-            banco = sqlite3.connect(self.pasta_origem + '\\dados.db')
-            cursor = banco.cursor()
-            cursor.execute('''CREATE TABLE papeis (
-                            nome text,
-                            preco real,
-                            quantidade integer,
-                            total real
-                            )''')
-            banco.commit()
-            banco.close()
-
-        self.dinheiro_restante()
+        with open(self.pasta_origem + '\\dinheiro.txt', 'r') as leitura:
+            return float(leitura.readline())
 
     def compra(self, codigo_da_acao, quantidade):
-        if not mercado_ta_aberto():
-            return False
         banco = sqlite3.connect(self.pasta_origem + '\\dados.db')
         cursor = banco.cursor()
         preco_novo, codigo_da_acao = pega_dados(codigo_da_acao)
@@ -69,8 +49,6 @@ class Carteira:
         return [codigo_da_acao, preco_novo, quantidade]
 
     def venda(self, codigo_da_acao, venderquantos):
-        if not mercado_ta_aberto():
-            return False
         banco = sqlite3.connect(self.pasta_origem + '\\dados.db')
         cursor = banco.cursor()
         preco_novo, codigo_da_acao = pega_dados(codigo_da_acao)
@@ -144,4 +122,4 @@ def mercado_ta_aberto():
 
 
 if __name__ == '__main__':
-    print(mercado_ta_aberto())
+    pass
