@@ -50,19 +50,19 @@ def criar_arquivo():
             atualizar_diretorio_de_pasta()
             return
 
-    with open(diretorio + '\\dinheiro.txt', 'w') as escrita:
-        escrita.write('1000')
+    with open(diretorio + '\\dinheiro.txt', 'w') as escrever:
+        escrever.write('1000')
     with open(diretorio + '\\dados.db', 'w'):
-        banco = sqlite3.connect(diretorio + '\\dados.db')
-        cursor = banco.cursor()
-        cursor.execute('''CREATE TABLE papeis (
+        banco_criar = sqlite3.connect(diretorio + '\\dados.db')
+        cursor_criar = banco_criar.cursor()
+        cursor_criar.execute('''CREATE TABLE papeis (
                                     nome text,
                                     preco real,
                                     quantidade integer,
                                     total real
                                     )''')
-        banco.commit()
-        banco.close()
+        banco_criar.commit()
+        banco_criar.close()
 
     carteira_inicial = Carteira(diretorio)
     atualizar_listbox()
@@ -145,6 +145,9 @@ def enviar_venda():
         return
     try:
         x = lista_oque_tenho.get(lista_oque_tenho.curselection()).split(' -')[0].upper()
+        if x == '':
+            mensagem_erro('VOCÊ DEVE ESCOLHER UMA AÇÃO PARA VENDER')
+            return
         n = int(quantidade_entry_venda.get())
         if n <= 0:
             raise ValueError
@@ -152,9 +155,6 @@ def enviar_venda():
 
     except ValueError:
         mensagem_erro('VOCÊ DEVE COLOCAR UM NÚMERO NATURAL POSITIVO EM "VENDER QUANTOS"')
-        return
-    except TclError:
-        mensagem_erro('VOCÊ DEVE ESCOLHER UMA AÇÃO PARA VENDER')
         return
     if not k:
         mensagem_erro('VOCÊ NÃO PODE VENDER O QUE NÃO TEM')
@@ -189,6 +189,23 @@ def enviar_compra():
         atualizar_listbox()
         codigo_entry_compra.delete(0, END)
         quantidade_entry_compra.delete(0, END)
+
+
+# verifica se o banco de dados existe, senao cria
+if not os.path.isfile('dados\\dados\\dados.db'):
+    banco = sqlite3.connect('dados\\dados\\dados.db')
+    cursor = banco.cursor()
+    cursor.execute('''CREATE TABLE papeis (
+                                nome text,
+                                preco real,
+                                quantidade integer,
+                                total real
+                                )''')
+    banco.commit()
+    banco.close()
+if not os.path.isfile('dados\\dados\\dinheiro.txt'):
+    with open('dados\\dados\\dinheiro.txt', 'w') as escrita:
+        escrita.write('1000')
 
 
 carteira_inicial = Carteira('dados\\dados')
