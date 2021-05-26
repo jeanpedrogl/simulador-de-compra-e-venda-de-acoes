@@ -93,6 +93,7 @@ def mudar_tempo():
     entry.grid(row=0, column=1)
     Button(frame, text='MUDAR', font=('Arial', 12), fg='BLACK', bg='green',
            command=lambda: mudar_tempo2(entry.get())).grid(row=1, column=1, columnspan=2)
+
     entry.insert(1, str(tempo_de_atualizacao))
     janela_pergunta.mainloop()
 
@@ -112,26 +113,35 @@ def atualizador_carteira(tempo=3, inicial=1000):
     segunda_janela = Toplevel()
     segunda_janela.resizable(0, 0)
     segunda_janela.title('CARTEIRA')
-    total = Label(segunda_janela, text='TOTAL', font=('Arial', 15), width=25, heigh=3, bg='BLACK', fg='green')
-    total.pack()
-    rendimento = Label(segunda_janela, text='RENDIMENTO', font=('Arial', 15), fg='BLACK', bg='green', width=25, heigh=3)
-    rendimento.pack()
+
+    frame = Frame(segunda_janela)
+    frame.pack()
+    total = Label(frame, text='TOTAL', font=('Arial', 15), width=25, heigh=3, bg='BLACK', fg='green')
+    total.grid(row=0, column=0)
+    rendimento = Label(frame, text='RENDIMENTO', font=('Arial', 15), fg='BLACK', bg='green', width=25, heigh=3)
+    rendimento.grid(row=1, column=0)
+    lista_de_acoes = Listbox(frame, bg='blue', font=('arial', 15), heigh=6, width=15)
+    lista_de_acoes.grid(row=0, column=1, rowspan=2)
     try:
-        while segunda_janela:
+        while segunda_janela.winfo_exists() == 1:
             dados = carteira_inicial.enviar_carteira_alfabetica()
             bolso = carteira_inicial.dinheiro_restante()
             soma = 0
-            for dado in dados:
+            for key_acao, dado in enumerate(dados):
                 valor_atualizado = pega_dados(dado[0])[0]
+                lista_de_acoes.delete(key_acao)
+                lista_de_acoes.insert(key_acao, f'''{dado[0]}    {((valor_atualizado - dado[1]) /
+                                                                            dado[1]) * 100:.2f}%''')
                 soma += valor_atualizado * dado[2]
             final = soma + bolso
             total.config(text=f'R${final:.2f}')
             rendimento.config(text=f'R${final - inicial:.2f}, {((final - inicial) / inicial) * 100:.2f}%')
             sleep(tempo)
-    except RuntimeError:
-        segunda_janela.destroy()
+            if not janela.winfo_exists() == 1:
+                janela.destroy()
 
-    segunda_janela.mainloop()
+    except RuntimeError:
+        exit()
 
 
 def dinheiro_carteira():
@@ -180,9 +190,11 @@ def enviar_compra():
         return
     if not x:
         if x is None:
+            mensagem_erro('ERRO, PAPEL NÃO ENCONTRADO')
             return
-        mensagem_erro(f'MERCADO FECHADO OU DINHEIRO INSUFICIENTE PARA REALIZAR COMPRA DE '
-                      f'{codigo_entry_compra.get().upper()}')
+        else:
+            mensagem_erro(f'MERCADO FECHADO OU DINHEIRO INSUFICIENTE PARA REALIZAR COMPRA DE '
+                          f'{codigo_entry_compra.get().upper()}')
     else:
         dinheiro_carteira()
         mensagem_sucesso(f'{x[0]} COMPRADO POR {x[1]}, TOTALIZANDO {(float(x[1]) * float(x[2])):.2f}')
@@ -209,7 +221,7 @@ if not os.path.isfile('dados\\dados\\dinheiro.txt'):
 
 
 carteira_inicial = Carteira('dados\\dados')
-tempo_de_atualizacao = 900
+tempo_de_atualizacao = 10
 janela = Tk()
 janela.geometry('800x640')
 foto_tela = PhotoImage(file='imagens\\tela.png')
