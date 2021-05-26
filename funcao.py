@@ -99,8 +99,10 @@ def pega_dados(codigo_da_acao):
     try:
         info = float(info.text.replace(',', '.')), nome.text
     except ValueError:
-        info = float(info.text.replace(',', '.').replace('.', '')), nome.text
-
+        try:
+            info = float(info.text.replace(',', '.').replace('.', '')), nome.text
+        except ValueError:
+            return None
     return info
 
 
@@ -114,8 +116,9 @@ def mensagem_sucesso(mensagem):
 
 def mercado_ta_aberto():
     dia = strftime('%A', localtime())
-    hora = int(strftime('%H', localtime()))
-    if dia in ['Sunday', 'Saturday'] or hora <= 10 or hora >= 17:
+    hora = int(strftime('%H%M', localtime()))
+    print(hora)
+    if dia in ['Sunday', 'Saturday'] or hora <= 1000 or hora >= 1730:
         return False
     else:
         return True
