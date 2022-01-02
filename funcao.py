@@ -94,8 +94,9 @@ def pega_dados(codigo_da_acao):
                             ' Chrome/90.0.4430.212 Safari/537.36'}
     conteudo = requests.get(f'https://www.google.com/search?q={codigo_da_acao.lower()}', headers=header).content
     site = BeautifulSoup(conteudo, 'html.parser')
-    info = site.find('span', attrs={'class': "IsqQVc NprOob XcVN5d wT3VGc", 'jsname': "vWLAgc"})
-    nome = site.find('span', {'class': "WuDkNe"})
+    info = site.find(
+        'span', attrs={'class': "IsqQVc NprOob wT3VGc", 'jsname': 'vWLAgc'})
+    nome = site.find('span', attrs={'class': "WuDkNe"})
     try:
         info = float(info.text.replace(',', '.')), nome.text
     except ValueError:
