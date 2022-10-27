@@ -8,7 +8,8 @@ from time import sleep
 
 def botao_preco_venda():
     try:
-        acao = lista_oque_tenho.get(lista_oque_tenho.curselection()).split(' -')[0].upper()
+        acao = lista_oque_tenho.get(
+            lista_oque_tenho.curselection()).split(' -')[0].upper()
         preco, acao = pega_dados(acao)
         ver_preco_venda.config(text=f'{acao}: R${preco:.2f}')
     except TclError:
@@ -41,19 +42,21 @@ def abrir_arquivo():
 
 def criar_arquivo():
     global carteira_inicial
-    diretorio = filedialog.askdirectory(title='Criar banco de dados em qual pasta?', initialdir='dados')
+    diretorio = filedialog.askdirectory(
+        title='Criar banco de dados em qual pasta?', initialdir='dados')
 
-    if os.path.isfile(diretorio + '\\dados.db') or os.path.isfile(diretorio + '\\dados.db'):
-        resposta = messagebox.askyesno(title='Já tem arquivos aqui', message='Quer substituir os arquivos?')
+    if os.path.isfile(diretorio + '/dados.db') or os.path.isfile(diretorio + '/dados.db'):
+        resposta = messagebox.askyesno(
+            title='Já tem arquivos aqui', message='Quer substituir os arquivos?')
         if not resposta:
             carteira_inicial = Carteira(diretorio)
             atualizar_diretorio_de_pasta()
             return
 
-    with open(diretorio + '\\dinheiro.txt', 'w') as escrever:
+    with open(diretorio + '/dinheiro.txt', 'w') as escrever:
         escrever.write('1000')
-    with open(diretorio + '\\dados.db', 'w'):
-        banco_criar = sqlite3.connect(diretorio + '\\dados.db')
+    with open(diretorio + '/dados.db', 'w'):
+        banco_criar = sqlite3.connect(diretorio + '/dados.db')
         cursor_criar = banco_criar.cursor()
         cursor_criar.execute('''CREATE TABLE papeis (
                                     nome text,
@@ -116,11 +119,14 @@ def atualizador_carteira(tempo=3, inicial=1000):
 
     frame = Frame(segunda_janela)
     frame.pack()
-    total = Label(frame, text='TOTAL', font=('Arial', 15), width=25, heigh=3, bg='BLACK', fg='green')
+    total = Label(frame, text='TOTAL', font=('Arial', 15),
+                  width=25, heigh=3, bg='BLACK', fg='green')
     total.grid(row=0, column=0)
-    rendimento = Label(frame, text='RENDIMENTO', font=('Arial', 15), fg='BLACK', bg='green', width=25, heigh=3)
+    rendimento = Label(frame, text='RENDIMENTO', font=(
+        'Arial', 15), fg='BLACK', bg='green', width=25, heigh=3)
     rendimento.grid(row=1, column=0)
-    lista_de_acoes = Listbox(frame, bg='blue', font=('arial', 15), heigh=6, width=15)
+    lista_de_acoes = Listbox(frame, bg='blue', font=(
+        'arial', 15), heigh=6, width=15)
     lista_de_acoes.grid(row=0, column=1, rowspan=2)
     try:
         while segunda_janela.winfo_exists() == 1:
@@ -135,7 +141,8 @@ def atualizador_carteira(tempo=3, inicial=1000):
                 soma += valor_atualizado * dado[2]
             final = soma + bolso
             total.config(text=f'R${final:.2f}')
-            rendimento.config(text=f'R${final - inicial:.2f}, {((final - inicial) / inicial) * 100:.2f}%')
+            rendimento.config(
+                text=f'R${final - inicial:.2f}, {((final - inicial) / inicial) * 100:.2f}%')
             sleep(tempo)
             if not janela.winfo_exists() == 1:
                 janela.destroy()
@@ -154,7 +161,8 @@ def enviar_venda():
         mensagem_erro('MERCADO FECHADO')
         return
     try:
-        x = lista_oque_tenho.get(lista_oque_tenho.curselection()).split(' -')[0].upper()
+        x = lista_oque_tenho.get(
+            lista_oque_tenho.curselection()).split(' -')[0].upper()
         if x == '':
             mensagem_erro('VOCÊ DEVE ESCOLHER UMA AÇÃO PARA VENDER')
             return
@@ -164,7 +172,8 @@ def enviar_venda():
         k = carteira_inicial.venda(x, n)
 
     except ValueError:
-        mensagem_erro('VOCÊ DEVE COLOCAR UM NÚMERO NATURAL POSITIVO EM "VENDER QUANTOS"')
+        mensagem_erro(
+            'VOCÊ DEVE COLOCAR UM NÚMERO NATURAL POSITIVO EM "VENDER QUANTOS"')
         return
     if not k:
         mensagem_erro('VOCÊ NÃO PODE VENDER O QUE NÃO TEM')
@@ -186,7 +195,8 @@ def enviar_compra():
         x = carteira_inicial.compra(codigo_entry_compra.get().upper(), n)
 
     except ValueError:
-        mensagem_erro('VOCÊ DEVE COLOCAR UM NÚMERO NATURAL POSITIVO EM "QUANTIDADE"')
+        mensagem_erro(
+            'VOCÊ DEVE COLOCAR UM NÚMERO NATURAL POSITIVO EM "QUANTIDADE"')
         return
     if not x:
         if x is None:
@@ -197,15 +207,16 @@ def enviar_compra():
                           f'{codigo_entry_compra.get().upper()}')
     else:
         dinheiro_carteira()
-        mensagem_sucesso(f'{x[0]} COMPRADO POR {x[1]}, TOTALIZANDO {(float(x[1]) * float(x[2])):.2f}')
+        mensagem_sucesso(
+            f'{x[0]} COMPRADO POR {x[1]}, TOTALIZANDO {(float(x[1]) * float(x[2])):.2f}')
         atualizar_listbox()
         codigo_entry_compra.delete(0, END)
         quantidade_entry_compra.delete(0, END)
 
 
 # verifica se o banco de dados existe, senao cria
-if not os.path.isfile('dados\\dados\\dados.db'):
-    banco = sqlite3.connect('dados\\dados\\dados.db')
+if not os.path.isfile('dados/dados.db'):
+    banco = sqlite3.connect('dados/dados.db')
     cursor = banco.cursor()
     cursor.execute('''CREATE TABLE papeis (
                                 nome text,
@@ -215,16 +226,16 @@ if not os.path.isfile('dados\\dados\\dados.db'):
                                 )''')
     banco.commit()
     banco.close()
-if not os.path.isfile('dados\\dados\\dinheiro.txt'):
-    with open('dados\\dados\\dinheiro.txt', 'w') as escrita:
+if not os.path.isfile('dados/dinheiro.txt'):
+    with open('dados/dinheiro.txt', 'w') as escrita:
         escrita.write('1000')
 
 
-carteira_inicial = Carteira('dados\\dados')
+carteira_inicial = Carteira('dados')
 tempo_de_atualizacao = 10
 janela = Tk()
 janela.geometry('800x640')
-foto_tela = PhotoImage(file='imagens\\tela.png')
+foto_tela = PhotoImage(file='imagens/tela.png')
 janela.iconphoto(True, foto_tela)
 janela.title('SIMULADOR DE AÇÕES')
 janela.resizable(0, 0)
@@ -234,7 +245,8 @@ parte_superior.pack()
 
 
 # mostrar diretório
-diretorio_mostrar = Label(text='Nenhuma pasta aberta', font=('Arial', 7, 'italic'))
+diretorio_mostrar = Label(text='Nenhuma pasta aberta',
+                          font=('Arial', 7, 'italic'))
 diretorio_mostrar.place(x=0, y=0)
 atualizar_diretorio_de_pasta()
 
@@ -277,11 +289,13 @@ titulo_compra.place(x=130, y=80)
 dados_compra = Frame(janela)
 dados_compra.place(x=20, y=200)
 
-codigo_label_compra = Label(dados_compra, text='CÓDIGO DA AÇÃO', font=('ARIAL', 13), fg='blue').grid(row=0, column=0)
+codigo_label_compra = Label(dados_compra, text='CÓDIGO DA AÇÃO', font=(
+    'ARIAL', 13), fg='blue').grid(row=0, column=0)
 codigo_entry_compra = Entry(dados_compra, font=('ARIAL', 13), )
 codigo_entry_compra.grid(row=0, column=1)
 
-quantidade_label_compra = Label(dados_compra, text='QUANTIDADE', font=('ARIAL', 13), fg='blue').grid(row=1, column=0)
+quantidade_label_compra = Label(dados_compra, text='QUANTIDADE', font=(
+    'ARIAL', 13), fg='blue').grid(row=1, column=0)
 quantidade_entry_compra = Entry(dados_compra, font=('ARIAL', 13), )
 quantidade_entry_compra.grid(row=1, column=1)
 
@@ -290,7 +304,8 @@ ver_preco_compra = Button(dados_compra, text='Qual o preço?', font=('ARIAL', 13
 ver_preco_compra.grid(row=2, column=0, columnspan=2)
 
 botao_compra = Button(janela, text='COMPRAR', font=('ARIAL', 15), bg='LIGHT GREEN',
-                      command=lambda: threading.Thread(target=enviar_compra).start(),
+                      command=lambda: threading.Thread(
+                          target=enviar_compra).start(),
                       padx=15, pady=3)
 botao_compra.place(x=210, y=560)
 
@@ -301,11 +316,13 @@ titulo_venda.place(x=540, y=80)
 dados_venda = Frame(janela)
 dados_venda.place(x=420, y=200)
 
-lista_oque_tenho = Listbox(dados_venda, font=('arial', 15), bg='#f8c471', width=12, height=7)
+lista_oque_tenho = Listbox(dados_venda, font=(
+    'arial', 15), bg='#f8c471', width=12, height=7)
 lista_oque_tenho.grid(row=0, column=0, rowspan=15)
 papeis_que_tenho = carteira_inicial.enviar_carteira_alfabetica()
 
-quantidade_label_venda = Label(dados_venda, text='VENDER QUANTOS', font=('ARIAL', 13), fg='blue')
+quantidade_label_venda = Label(
+    dados_venda, text='VENDER QUANTOS', font=('ARIAL', 13), fg='blue')
 quantidade_label_venda.grid(row=1, column=2)
 quantidade_entry_venda = Entry(dados_venda, font=('arial', 15), width=8)
 quantidade_entry_venda.grid(row=2, column=2)
@@ -321,7 +338,8 @@ ver_preco_venda.grid(row=3, column=2)
 
 
 botao_venda = Button(janela, text='VENDER', font=('ARIAL', 15), bg='RED',
-                     command=lambda: threading.Thread(target=enviar_venda).start(),
+                     command=lambda: threading.Thread(
+                         target=enviar_venda).start(),
                      padx=15, pady=3)
 botao_venda.place(x=630, y=560)
 
