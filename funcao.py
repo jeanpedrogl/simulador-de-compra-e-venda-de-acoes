@@ -1,5 +1,4 @@
-import requests
-from bs4 import BeautifulSoup
+import yfinance as yf
 import sqlite3
 from tkinter import messagebox
 from time import localtime, strftime
@@ -97,24 +96,9 @@ class Carteira:
 
 
 def pega_dados(codigo_da_acao):
-    header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
-                            ' Chrome/90.0.4430.212 Safari/537.36'}
-    conteudo = requests.get(
-        f'https://www.google.com/search?q={codigo_da_acao.lower()}', headers=header).content
-    site = BeautifulSoup(conteudo, 'html.parser')
-    info = site.find(
-        'span', attrs={'class': "IsqQVc NprOob wT3VGc", 'jsname': 'vWLAgc'})
-    nome = site.find('div', attrs={'class': "wx62f PZPZlf x7XAkb"})
-    try:
-        info = float(info.text.replace(',', '.')), nome.text.split()[-1]
-    except ValueError:
-        try:
-            info = float(info.text.replace(
-                ',', '.').replace('.', '')), nome.text.split()[-1]
-        except ValueError:
-            return None
+    acao = yf.Ticker(f"{codigo_da_acao}.SA")
+    info = (float(acao.info["regularMarketPrice"]), acao.info["symbol"][:-3])
     return info
-
 
 def mensagem_erro(mensagem):
     messagebox.showerror(title='ERRO AO REALIZAR OPERAÇÃO', message=mensagem)
